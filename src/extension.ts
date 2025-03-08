@@ -1,15 +1,16 @@
 // TODO: We'll be using the Webview API to create our extension's regex playground.
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
 import * as vscode from "vscode";
 
-// This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "regexer" is now active!');
-
+	console.log(context.extensionPath);
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
@@ -30,26 +31,21 @@ export function activate(context: vscode.ExtensionContext) {
 				"regexer",
 				"Regexer",
 				vscode.ViewColumn.One,
-				{},
+				{ enableScripts: true },
 			);
 
-			panel.webview.html = await getWebviewContent();
+			panel.webview.html = await getWebviewContent(context.extensionPath);
 		}),
 	);
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {}
-async function getWebviewContent() {
-	return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cat Coding</title>
-</head>
-<body>
-	<h1>Hello World </h1>
-</body>
-</html>`;
+async function getWebviewContent(extensionPath: string) {
+	const blob = await readFile(path.join(extensionPath, "ui/dist/index.html"));
+
+	const html = blob.toLocaleString();
+	console.log(html);
+
+	return html;
 }
